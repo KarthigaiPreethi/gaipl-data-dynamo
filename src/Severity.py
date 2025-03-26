@@ -61,7 +61,7 @@ def classify_with_nlp(row):
         span = doc[start:end]
         if span.text in severity_patterns['L3']:
             severity = 'L3'
-        elif span.text in severity_patterns['L2'] and severity != 'L3':
+        elif span.text in severity_patterns['L2'] and severity != 'L1':
             severity = 'L2'
     
     # Add NLP insights
@@ -76,8 +76,12 @@ tech_entities = ['ORG', 'PRODUCT', 'TECH']  # spaCy entity labels
 df['Tech_Components'] = df['Description'].apply(
     lambda x: [ent.text for ent in nlp(x).ents if ent.label_ in tech_entities]
 )
+df = df.map(lambda x: str(x).replace('[', '').replace(']', ''))
 
-with pd.ExcelWriter('enhanced_incidents.xlsx') as writer:
+with pd.ExcelWriter('tickets.xlsx') as writer:
+    # for col in df.select_dtypes(include='object').columns:
+    #     df[col] = df[col].str.replace(r'[\[\]]', '', regex=True)
+    
     df.to_excel(writer, index=False)
     
     # Add color coding
