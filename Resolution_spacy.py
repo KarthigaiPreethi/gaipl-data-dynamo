@@ -75,5 +75,5 @@ class IncidentResolver:
 resolver = IncidentResolver()
 resolver.process_incidents(
     input_path="enhanced_incidents.xlsx",
-    output_path="enhanced_incidents_ai_updated.xlsx"
+    output_path="src/main/com/py/ipe/resources/enhanced_incidents_ai_updated.csv"
 )

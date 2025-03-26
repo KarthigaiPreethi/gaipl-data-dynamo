@@ -1,58 +1,81 @@
-import openai
-from flask import Flask, request, jsonify
+from flask import Flask, render_template, redirect, url_for, flash, request
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
-# Initialize Flask app
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your-secret-key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///platform.db'
+db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
 
-# Set up your OpenAI API key
-openai.api_key = ''
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(120), nullable=False)
 
-# Example custom dataset
-dataset = {
-    "What is the capital of France?": "The capital of France is Paris.",
-    "Who is the president of the United States?": "The president of the United States is Joe Biden.",
-    "What is the tallest mountain in the world?": "The tallest mountain in the world is Mount Everest."
-}
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
-# Function to get a custom answer from the dataset
-def get_custom_answer(prompt):
-    return dataset.get(prompt, None)
+@app.route('/')
+@login_required
+def dashboard():
+    return render_template('resources/dashboard.html')
 
-# Create a route that will handle POST requests
-@app.route('/chat', methods=['POST'])
-def chat():
-    try:
-        # Get the JSON data from the request
-        data = request.get_json()
+@app.route('/infrastructure')
+@login_required
+def infrastructure():
+    return render_template('resources/infrastructure.html')
 
-        # Get the prompt from the request body
-        prompt = data.get("prompt", "")
+@app.route('/monitoring')
+@login_required
+def monitoring():
+    return render_template('resources/monitoring.html')
 
-        if not prompt:
-            return jsonify({"error": "Prompt is required!"}), 400
+@app.route('/deployments')
+@login_required
+def deployments():
+    return render_template('resources/deployments.html')
 
-        # First, check if the prompt exists in the custom dataset
-        custom_answer = get_custom_answer(prompt)
+@app.route('/tickets')
+@login_required
+def tickets():
+    return render_template('resources/tickets.html')
 
-        if custom_answer:
-            # If a custom answer exists, return it
-            return jsonify({"response": custom_answer})
+@app.route('/chatbot')
+@login_required
+def chatbot():
+    return render_template('resources/chatbot.html')
 
-        # If no custom answer is found, fall back to the OpenAI API
-        response = openai.ChatCompletion.create(            model="gpt-4",  # Or another model
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=150
-        )
+@app.route('/ai-insights')
+@login_required
+def ai_insights():
+    return render_template('resources/ai_insights.html')
 
-        # Extract and return the response from OpenAI
-        response_text = response['choices'][0]['message']['content'].strip()
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        user = User.query.filter_by(username=username).first()
+        if user and password == user.password:
+            login_user(user)
+            return redirect(url_for('dashboard'))
+        flash('Invalid username or password')
+    return render_template('resources/login.html')
 
-        return jsonify({"response": response_text})
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('login'))
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
-# Run the server
-if __name__ == "__main__":
+if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
+        if not User.query.filter_by(username='admin').first():
+            test_user = User(username='admin', password='admin')
+            db.session.add(test_user)
+            db.session.commit()
     app.run(debug=True)
