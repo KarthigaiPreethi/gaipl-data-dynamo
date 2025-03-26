@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 # Set up your OpenAI API key
-openai.api_key = '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'
+openai.api_key = ''
 
 # Example custom dataset
 dataset = {
