@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <h2>Platform Assistant</h2>
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="chat-container" style="height: 400px; overflow-y: auto;">
+                        <div id="chat-messages" class="mb-3">
+                            <!-- Chat messages will appear here -->
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <form id="chat-form" class="d-flex">
+                            <input type="text" class="form-control me-2" id="user-input" placeholder="Type your message...">
+                            <button type="submit" class="btn btn-primary">Send</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
