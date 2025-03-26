@@ -11,11 +11,11 @@ df = pd.read_excel('incidents.xlsx')
 
 # Define severity patterns
 severity_patterns = {
-    'L1': ['outage', 'failure', 'breach', 'ransomware', 'unauthorized access', 
+    'L3': ['outage', 'failure', 'breach', 'ransomware', 'unauthorized access', 
            'data loss', 'downtime', 'critical error', 'system crash'],
     'L2': ['degradation', 'timeout', 'high latency', 'performance issue', 
            'authentication failure', 'service disruption'],
-    'L3': ['warning', 'notification', 'minor issue', 'configuration alert']
+    'L1': ['warning', 'notification', 'minor issue', 'configuration alert']
 }
 
 # Initialize PhraseMatcher
@@ -30,12 +30,12 @@ def classify_severity(row):
     resolution_time = row['ResolutionTime(min)']
     impact = str(row['ImpactLevel']).lower()
     
-    # L1 Criteria (Critical)
+    # L3 Criteria (Complex)
     if (resolution_time > 180 or 
-        'critical' in impact or
+        'complex' in impact or
         any(x in description for x in ['outage', 'failure', 'halted', 'breach', 'ransomware', 'unauthorized']) or
         any(x in root_cause for x in ['controller failure', 'regional failure', 'privilege escalation'])):
-        return 'L1'
+        return 'L3'
     
     # L2 Criteria (Major)
     elif (60 <= resolution_time <= 180 or
@@ -44,9 +44,9 @@ def classify_severity(row):
           any(x in root_cause for x in ['memory leak', 'ssl', 'misconfiguration'])):
         return 'L2'
     
-    # L3 Criteria (Minor)
+    # L1 Criteria (Minor)
     else:
-        return 'L3'
+        return 'L1'
 # Enhanced classification function
 def classify_with_nlp(row):
     doc = nlp(str(row['Description']).lower() + " " + str(row['RootCause']).lower())
@@ -59,9 +59,9 @@ def classify_with_nlp(row):
     if matches:
         _, start, end = matches[0]  # Take first match
         span = doc[start:end]
-        if span.text in severity_patterns['L1']:
-            severity = 'L1'
-        elif span.text in severity_patterns['L2'] and severity != 'L1':
+        if span.text in severity_patterns['L3']:
+            severity = 'L3'
+        elif span.text in severity_patterns['L2'] and severity != 'L3':
             severity = 'L2'
     
     # Add NLP insights
@@ -90,7 +90,7 @@ with pd.ExcelWriter('enhanced_incidents.xlsx') as writer:
     
     for row in worksheet.iter_rows(min_row=2, max_row=len(df)+1, min_col=7, max_col=7):
         for cell in row:
-            if cell.value == 'L1':
+            if cell.value == 'L3':
                 cell.fill = red_fill
             elif cell.value == 'L2':
                 cell.fill = yellow_fill
