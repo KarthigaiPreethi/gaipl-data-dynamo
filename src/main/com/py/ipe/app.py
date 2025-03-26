@@ -21,37 +21,37 @@ def load_user(user_id):
 @app.route('/')
 @login_required
 def dashboard():
-    return render_template('resources/dashboard.html')
+    return render_template('dashboard.html')
 
 @app.route('/infrastructure')
 @login_required
 def infrastructure():
-    return render_template('resources/infrastructure.html')
+    return render_template('infrastructure.html')
 
 @app.route('/monitoring')
 @login_required
 def monitoring():
-    return render_template('resources/monitoring.html')
+    return render_template('monitoring.html')
 
 @app.route('/deployments')
 @login_required
 def deployments():
-    return render_template('resources/deployments.html')
+    return render_template('deployments.html')
 
 @app.route('/tickets')
 @login_required
 def tickets():
-    return render_template('resources/tickets.html')
+    return render_template('tickets.html')
 
 @app.route('/chatbot')
 @login_required
 def chatbot():
-    return render_template('resources/chatbot.html')
+    return render_template('chatbot.html')
 
 @app.route('/ai-insights')
 @login_required
 def ai_insights():
-    return render_template('resources/ai_insights.html')
+    return render_template('ai_insights.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -63,7 +63,7 @@ def login():
             login_user(user)
             return redirect(url_for('dashboard'))
         flash('Invalid username or password')
-    return render_template('resources/login.html')
+    return render_template('login.html')
 
 @app.route('/logout')
 @login_required
